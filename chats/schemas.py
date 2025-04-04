@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from core.schemas import CountSchema, StatusOkSchema
-from listings.schemas import ListingDTO
+from items.schemas import ListingDTO
 
 
 class CreateChatAndMessageRequestSchema(BaseModel):

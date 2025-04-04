@@ -57,4 +57,4 @@ class User(BaseModel):
 from accounts.models import RecoveryToken, VerificationToken
 from auth.models import RefreshToken
 from chats.models import ListingChat, ListingChatMessage
-from listings.models import FavoriteListing, Listing
+from items.models import FavoriteListing, Listing

@@ -19,8 +19,8 @@ from core.redis_client import RedisPool
 from core.socketio_server import CustomSocketServer
 from core.tasks import send_notifications
 from core.utils import serialize_datetime
-from listings.exceptions import ListingNotFound
-from listings.facade import IListingFacade
+from items.exceptions import ListingNotFound
+from items.facade import IListingFacade
 from notifications.facade import INotificationFacade
 from notifications.schemas import NotificationSchema
 

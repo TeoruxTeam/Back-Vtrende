@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from core.logger import logger
 from core.repositories import BaseRepository
-from listings.models import Listing, ListingImage
+from items.models import Listing, ListingImage
 
 from .exceptions import ChatNotFound
 from .mappers import ChatMapper, ChatMessageMapper

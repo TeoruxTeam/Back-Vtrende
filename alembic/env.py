@@ -9,7 +9,7 @@ from categories.models import *
 from chats.models import *
 from core.database import BaseModel
 from core.environment import env
-from listings.models import *
+from items.models import *
 from localization.models import *
 from locations.models import *
 from notifications.models import *

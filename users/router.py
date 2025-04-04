@@ -7,8 +7,8 @@ from auth.depends import get_current_confirmed_user, get_current_confirmed_user_
 from chats.facade import IChatFacade
 from chats.schemas import GetChatListResponseSchema
 from core.container import Container
-from listings.facade import IListingFacade
-from listings.schemas import GetMyListingsResponseSchema, GetUserListingsResponseSchema
+from items.facade import IListingFacade
+from items.schemas import GetMyListingsResponseSchema, GetUserListingsResponseSchema
 from ratings.facade import IRatingFacade
 from ratings.schemas import GetUserRatingResponseSchema, GetUserReviewsResponseSchema
 

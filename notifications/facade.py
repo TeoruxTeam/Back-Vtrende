@@ -6,7 +6,7 @@ from core.email_sender import EmailSender
 from core.logger import logger
 from core.redis_client import RedisPool
 from core.socketio_server import CustomSocketServer
-from listings.schemas import ListingDTO
+from items.schemas import ListingDTO
 from recommendations.schemas import UserView
 from recommendations.services import ICategoryViewService, ISubcategoryViewService
 from users.schemas import UserDTO

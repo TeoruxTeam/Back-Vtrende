@@ -27,13 +27,13 @@ from core.email_sender import EmailSender
 from core.environment import env
 from core.redis_client import RedisPool
 from core.socketio_server import CustomSocketServer
-from listings.facade import ListingFacade
-from listings.repositories import (
+from items.facade import ListingFacade
+from items.repositories import (
     FavoriteListingRepository,
     ListingAggregateRepository,
     ListingRepository,
 )
-from listings.services import (
+from items.services import (
     FavoriteListingService,
     ListingAggregateService,
     ListingService,

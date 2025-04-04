@@ -69,5 +69,5 @@ class ListingChatMessage(BaseModel):
     user: Mapped["User"] = relationship(back_populates="messages")
 
 
-from listings.models import Listing
+from items.models import Listing
 from users.models import User

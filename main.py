@@ -18,7 +18,7 @@ from core.celery import app as celery_app
 from core.container import Container
 from core.environment import env
 from core.middlewares import RequestCountMiddleware, TrailingSlashMiddleware
-from listings.router import router as listing_router
+from items.router import router as listing_router
 from localization.router import router as localization_router
 from notifications.router import router as notifications_router
 from payments.router import router as payments_router

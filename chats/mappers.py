@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from listings.mappers import ListingMapper
+from items.mappers import ListingMapper
 
 from .models import ListingChat, ListingChatMessage
 from .schemas import (
