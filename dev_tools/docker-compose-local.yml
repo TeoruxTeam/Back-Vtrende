@@ -1,0 +1,91 @@
+services:
+  vivli_backend:
+    container_name: vivli_backend
+    build:
+      context: ../
+      dockerfile: dev_tools/Dockerfile
+    restart: always
+    depends_on:
+      - vivli_db
+      - vivli_redis
+    ports:
+      - "8000:8000"
+      - "465:465"
+    volumes:
+      - ../:/app
+    networks:
+      - vivli_network
+    env_file:
+     - .env.dev
+    environment:
+      ENTRYPOINT_BACKEND: "true"
+
+  vivli_db:
+    container_name: vivli_db
+    image: postgres:alpine
+    restart: always
+    env_file:
+      - .env.dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_vivli_data:/var/lib/postgresql/data
+    networks:
+      - vivli_network
+
+  vivli_redis:
+    container_name: vivli_redis
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    env_file: 
+      - .env.dev
+    command: >
+      sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
+    restart: always
+    volumes:
+      - vivli_redis_data:/data
+    networks:
+      - vivli_network
+    
+  vivli_celery_worker:
+    restart: always
+    depends_on:
+      - vivli_db
+      - vivli_redis
+    build:
+      context: ..
+      dockerfile: dev_tools/Dockerfile
+    volumes:
+      - ../:/app
+    networks:
+      - vivli_network
+    env_file:
+     - .env.dev
+    environment:
+      ENTRYPOINT_CELERY_WORKER: "true"
+
+  vivli_celery_beat:
+    restart: always
+    depends_on:
+      - vivli_db
+      - vivli_redis
+    build:
+      context: ..
+      dockerfile: dev_tools/Dockerfile
+    volumes:
+      - ../:/app
+    networks:
+      - vivli_network
+    env_file:
+     - .env.dev
+    environment:
+      ENTRYPOINT_CELERY_BEAT: "true"
+
+volumes:
+  postgres_vivli_data:
+  vivli_redis_data:
+
+networks:
+  vivli_network:
+    external: true
