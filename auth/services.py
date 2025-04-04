@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -7,13 +6,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 
 from auth.exceptions import InvalidTokenFormat, MissingToken
-from auth.repositories import IRefreshTokenRepository
 from core.environment import env
 from core.exceptions import AuthError
 from core.logger import logger
 from users.schemas import UserDTO
 
-from .schemas import AccessTokenSchema, AuthTokensSchema, RefreshTokenDTO, SignUpSchema
+from .repositories import RefreshTokenRepository
+from .schemas import AccessTokenSchema, AuthTokensSchema, RefreshTokenDTO
 
 
 class JWTBearer(HTTPBearer):
@@ -64,37 +63,8 @@ class JWTBearer(HTTPBearer):
             return {}
 
 
-class IAuthService(ABC):
-
-    @abstractmethod
-    async def generate_tokens(
-        self, schema: SignUpSchema, remember_me: bool
-    ) -> AuthTokensSchema:
-        pass
-
-    @abstractmethod
-    async def verify_jwt(jwt_token: str) -> bool:
-        pass
-
-    @abstractmethod
-    async def get_refresh_token(refresh_token: str) -> RefreshTokenDTO:
-        pass
-
-    @abstractmethod
-    async def delete_refresh_token(self, refresh_token_id: int) -> None:
-        pass
-
-    @abstractmethod
-    async def delete_refresh_token_by_token(self, refresh_token: str) -> None:
-        pass
-
-    @abstractmethod
-    async def get_socketio_token(self, environ: dict) -> RefreshTokenDTO:
-        pass
-
-
-class AuthService(IAuthService):
-    def __init__(self, repo: IRefreshTokenRepository):
+class AuthService:
+    def __init__(self, repo: RefreshTokenRepository):
         self.repo = repo
 
     async def _create_access_token(self, user: UserDTO) -> tuple[str, datetime]:

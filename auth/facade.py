@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
-import bcrypt
-import httpx
 import jwt
+import httpx
 from fastapi import HTTPException
 
 from core.environment import env
@@ -152,21 +151,23 @@ class AuthFacade:
             "picture": user_data.get("picture"),
         }
 
-    async def get_facebook_user_info(self, access_token: str) -> dict:
-        params = {"access_token": access_token, "fields": "id,email,name,picture"}
+    async def get_yandex_user_info(self, access_token: str) -> dict:
+        params = {
+            "access_token": access_token, 
+            "format": "json"
+        }
         async with httpx.AsyncClient() as client:
-            response = await client.get("https://graph.facebook.com/me", params=params)
+            response = await client.get(
+                "https://login.yandex.ru/info", 
+                params=params
+            )
             if response.status_code != 200:
                 raise HTTPException(
-                    status_code=400, detail="Failed to fetch Facebook user info"
+                    status_code=400, detail="Failed to fetch Yandex user info"
                 )
             user_data = response.json()
         return {
-            "email": user_data.get("email"),
-            "name": user_data.get("name"),
-            "picture": (
-                user_data.get("picture", {}).get("data", {}).get("url")
-                if user_data.get("picture")
-                else None
-            ),
+            "email": user_data.get("default_email"),
+            "name": user_data.get("real_name") or user_data.get("display_name"),
+            "picture": user_data.get("default_avatar_id") and f"https://avatars.yandex.net/get-yapic/{user_data.get('default_avatar_id')}/islands-200",
         }

@@ -5,9 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from core.container import Container
 from core.environment import env
 
-from .facade import IAuthFacade
-from .helpers import facebook, google
-from .providers import OAUTH_PROVIDERS
+from .facade import AuthFacade
 from .schemas import (
     OAuthCodeSchema,
     RefreshTokenRequestSchema,
@@ -22,12 +20,12 @@ router = APIRouter(
     tags=["auth"],
 )
 
-
+        
 @router.post("/google", response_model=SignUpResponseSchema)
 @inject
 async def auth_google(
     schema: OAuthCodeSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     config = {
         "client_id": env.google_client_id,
@@ -41,20 +39,20 @@ async def auth_google(
     return user
 
 
-@router.post("/facebook", response_model=SignUpResponseSchema)
+@router.post("/yandex", response_model=SignUpResponseSchema)
 @inject
-async def auth_facebook(
+async def auth_yandex(
     schema: OAuthCodeSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     config = {
-        "client_id": env.facebook_client_id,
-        "client_secret": env.facebook_secret,
-        "token_url": "https://graph.facebook.com/v12.0/oauth/access_token",
+        "client_id": env.yandex_client_id,
+        "client_secret": env.yandex_secret,
+        "token_url": "https://oauth.yandex.com/token",
     }
     token_response = await auth_facade.exchange_code_for_token(config, schema.code)
     access_token = token_response["access_token"]
-    user_info = await auth_facade.get_facebook_user_info(access_token)
+    user_info = await auth_facade.get_yandex_user_info(access_token)
     user = await auth_facade.handle_oauth_user(user_info)
     return user
 
@@ -63,7 +61,7 @@ async def auth_facebook(
 @inject
 async def sign_up(
     schema: SignUpSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     if "." in schema.name:
         raise HTTPException(status_code=400, detail="error.user.name_has_dots")
@@ -74,7 +72,7 @@ async def sign_up(
 @inject
 async def sign_in(
     schema: SignInSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     return await auth_facade.sign_in(schema)
 
@@ -83,7 +81,7 @@ async def sign_in(
 @inject
 async def refresh_token(
     schema: RefreshTokenRequestSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     return await auth_facade.refresh_token(schema)
 
@@ -92,6 +90,6 @@ async def refresh_token(
 @inject
 async def sign_out(
     schema: RefreshTokenRequestSchema,
-    auth_facade: IAuthFacade = Depends(Provide[Container.auth_facade]),
+    auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
     return await auth_facade.sign_out(schema)

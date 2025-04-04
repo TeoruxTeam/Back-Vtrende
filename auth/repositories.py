@@ -1,41 +1,18 @@
-from abc import ABC, abstractmethod
 from contextlib import AbstractAsyncContextManager
 from datetime import datetime
-from typing import Any, Callable, Coroutine
+from typing import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import delete
 
 from core.repositories import BaseRepository
-from users.schemas import UserDTO
 
 from .models import RefreshToken
 from .schemas import RefreshTokenDTO
 
 
-class IRefreshTokenRepository(ABC):
-
-    @abstractmethod
-    async def save_refresh_token(
-        self, user_id: int, refresh_token: str, expiration_datetime: datetime
-    ) -> None:
-        pass
-
-    @abstractmethod
-    async def get_refresh_token(self, refresh_token: str) -> RefreshTokenDTO:
-        pass
-
-    @abstractmethod
-    async def delete_refresh_token_by_id(self, token_id: int) -> None:
-        pass
-
-    @abstractmethod
-    async def delete_refresh_token_by_token(self, refresh_token: str) -> None:
-        pass
-
-
-class RefreshTokenRepository(IRefreshTokenRepository, BaseRepository):
+class RefreshTokenRepository(BaseRepository):
     def __init__(
         self, session_factory: Callable[..., AbstractAsyncContextManager[AsyncSession]]
     ):
