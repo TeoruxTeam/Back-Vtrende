@@ -23,7 +23,7 @@ async def create_order(
     user: UserDTO = Depends(get_current_verified_buyer)
 ) -> CreateOrderResponseSchema:
     """Create order"""
-    return await order_service.create_order(user)
+    return await order_service.create_order(user.id)
 
 
 @router.get("/self/")
