@@ -3,7 +3,6 @@ from typing import List
 
 from pydantic import Field, validator
 from pydantic_settings import BaseSettings
-from yookassa import Configuration
 
 
 class Settings(BaseSettings):
@@ -64,6 +63,3 @@ def get_settings() -> Settings:
 
 
 env = get_settings()
-
-Configuration.account_id = env.yookassa_account_id
-Configuration.secret_key = env.yookassa_secret_key

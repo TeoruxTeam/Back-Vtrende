@@ -76,21 +76,17 @@ class AuthService:
             "exp": expiration_datetime,
             "id": user.id,
             "email": user.email,
-            "name": user.name,
-            "is_activated": user.is_activated,
-            "is_admin": user.is_admin,
+            "is_shop": user.is_shop,
+            "verified": user.verified
         }
         access_token = jwt.encode(payload, env.secret_key, algorithm=env.jwt_algorithm)
         access_token_padded = self.add_padding_to_jwt(access_token)
         return access_token_padded, expiration_datetime
 
-    async def _create_refresh_token(self, user: UserDTO, remember_me: bool) -> str:
-        if remember_me:
-            expiration_datetime = datetime.now(timezone.utc) + timedelta(days=30)
-        else:
-            expiration_datetime = datetime.now(timezone.utc) + timedelta(
-                minutes=env.refresh_token_lifetime
-            )
+    async def _create_refresh_token(self, user: UserDTO) -> str:
+        expiration_datetime = datetime.now(timezone.utc) + timedelta(
+            minutes=env.refresh_token_lifetime
+        )
 
         refresh_token_payload = {"user_id": user.id, "exp": expiration_datetime}
         refresh_token = jwt.encode(
@@ -105,12 +101,10 @@ class AuthService:
         return refresh_token_padded, expiration_datetime
 
     async def generate_tokens(
-        self, user: UserDTO, remember_me: bool
+        self, user: UserDTO
     ) -> AuthTokensSchema:
         access_token, access_expiration = await self._create_access_token(user)
-        refresh_token, refresh_expiration = await self._create_refresh_token(
-            user, remember_me
-        )
+        refresh_token, refresh_expiration = await self._create_refresh_token(user)
 
         return AuthTokensSchema(
             access_token=access_token,

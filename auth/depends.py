@@ -29,44 +29,117 @@ async def get_current_user(
         raise AuthError(detail="error.auth.user.not_found")
     return current_user
 
-
 @inject
-async def get_current_confirmed_user(
+async def get_current_seller(
     user_service: UserService = Depends(Provide[Container.user_service]),
     token: Optional[str] = Depends(JWTBearer()),
 ) -> UserWithPasswordDTO:
     if not token:
         raise AuthError(detail="error.auth.token_not_provided")
     payload = jwt.decode(token, env.secret_key, algorithms=[env.jwt_algorithm])
-    logger.warning(f"getting current user with pasyload: {payload}")
+    logger.warning(f"getting current verified seller with pasyload: {payload}")
     current_user: UserWithPasswordDTO = await user_service.get_user_by_id(
         payload["id"], True
     )
-    logger.warning(f"Current user: {current_user}")
+    logger.warning(f"Current verified seller: {current_user}")
+
     if not current_user:
         raise AuthError(detail="error.auth.user.not_found")
-    if not current_user.is_activated:
-        raise AuthError(detail="error.auth.user.not_activated")
-    if current_user.is_deleted:
-        raise AuthError(detail="error.auth.user.not_found")
-    if current_user.is_banned:
-        raise AuthError(detail="error.auth.user.banned")
-    logger.info(f"User {current_user.email} is activated")
+    if not current_user.is_shop:
+        raise AuthError(detail="error.auth.not_shop")
+    logger.info(f"User {current_user.email} is verified seller")
     return current_user
-
-
+    
 @inject
-async def get_current_confirmed_user_optional(
+async def get_current_verified_seller(
     user_service: UserService = Depends(Provide[Container.user_service]),
     token: Optional[str] = Depends(JWTBearer()),
-) -> Optional[UserWithPasswordDTO]:
+) -> UserWithPasswordDTO:
     if not token:
-        logger.warning("Token is not provided")
-        return None
+        raise AuthError(detail="error.auth.token_not_provided")
     payload = jwt.decode(token, env.secret_key, algorithms=[env.jwt_algorithm])
+    logger.warning(f"getting current verified seller with pasyload: {payload}")
     current_user: UserWithPasswordDTO = await user_service.get_user_by_id(
         payload["id"], True
     )
-    if not current_user or not current_user.is_activated:
-        return None
+    logger.warning(f"Current verified seller: {current_user}")
+
+    if not current_user:
+        raise AuthError(detail="error.auth.user.not_found")
+    if not current_user.verified:
+        raise AuthError(detail="error.auth.user.not_verified")
+    if not current_user.is_shop:
+        raise AuthError(detail="error.auth.not_shop")
+    logger.info(f"User {current_user.email} is verified seller")
+    return current_user
+
+@inject
+async def get_current_verified_seller_with_iin_bin(
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    token: Optional[str] = Depends(JWTBearer()),
+) -> UserWithPasswordDTO:
+    if not token:
+        raise AuthError(detail="error.auth.token_not_provided")
+    payload = jwt.decode(token, env.secret_key, algorithms=[env.jwt_algorithm])
+    logger.warning(f"getting current verified seller with pasyload: {payload}")
+    current_user: UserWithPasswordDTO = await user_service.get_user_by_id(
+        payload["id"], True
+    )
+    logger.warning(f"Current verified seller: {current_user}")
+
+    if not current_user:
+        raise AuthError(detail="error.auth.user.not_found")
+    elif not current_user.verified:
+        raise AuthError(detail="error.auth.user.not_verified")
+    elif not current_user.is_shop:
+        raise AuthError(detail="error.auth.not_shop")
+    elif not current_user.iin_bin:
+        raise AuthError(detail="error.auth.iin_bin_not_provided")
+    logger.info(f"User {current_user.email} is verified seller with iin_bin")
+    return current_user
+
+@inject
+async def get_current_verified_buyer(
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    token: Optional[str] = Depends(JWTBearer()),
+) -> UserWithPasswordDTO:
+    if not token:
+        raise AuthError(detail="error.auth.token_not_provided")
+    payload = jwt.decode(token, env.secret_key, algorithms=[env.jwt_algorithm])
+    logger.warning(f"getting current verified buyer with pasyload: {payload}")
+    current_user: UserWithPasswordDTO = await user_service.get_user_by_id(
+        payload["id"], True
+    )
+    logger.warning(f"Current verified buyer: {current_user}")
+
+    if not current_user:
+        raise AuthError(detail="error.auth.user.not_found")
+    if not current_user.verified:
+        raise AuthError(detail="error.auth.user.not_verified")
+    if current_user.is_shop:
+        raise AuthError(detail="error.auth.is_shop")
+    
+    logger.info(f"User {current_user.email} is verified buyer")
+    return current_user
+
+@inject
+async def get_current_verified_user(
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    token: Optional[str] = Depends(JWTBearer()),
+) -> UserWithPasswordDTO:
+    if not token:
+        raise AuthError(detail="error.auth.token_not_provided")
+    payload = jwt.decode(token, env.secret_key, algorithms=[env.jwt_algorithm])
+    logger.warning(f"getting current verified user with pasyload: {payload}")
+    current_user: UserWithPasswordDTO = await user_service.get_user_by_id(
+        payload["id"], True
+    )
+    logger.warning(f"Current verified user: {current_user}")
+
+    if not current_user:
+        raise AuthError(detail="error.auth.user.not_found")
+    if not current_user.verified:
+        raise AuthError(detail="error.auth.user.not_verified")
+    
+    logger.info(f"User {current_user.email} is verified user")
     return current_user

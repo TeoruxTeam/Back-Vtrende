@@ -3,19 +3,25 @@ from typing import Optional
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, File, Request, UploadFile
 
-from auth.depends import get_current_confirmed_user
+from auth.depends import (
+    get_current_verified_buyer,
+    get_current_verified_seller_with_iin_bin,
+    get_current_verified_seller,
+    get_current_verified_seller_with_iin_bin,
+    get_current_seller,
+    get_current_verified_user
+)
 from core.container import Container
 
 
 from .schemas import (
     GetMeResponseSchema,
-    PatchPasswordRequestSchema,
-    PatchPasswordResponseSchema,
-    PutMeRequestSchema,
-    PutMeResponseSchema,
     UserDTO,
+    UpdateShop,
+    UpdateShopResponseSchema,
+    UpdateShopImageResponseSchema
 )
-from .services import IUserService
+from .services import UserService
 
 router = APIRouter(
     prefix="/profile",
@@ -26,32 +32,27 @@ router = APIRouter(
 @router.get("/me/", response_model=GetMeResponseSchema)
 @inject
 async def get_me(
-    request: Request,
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    user: UserDTO = Depends(get_current_confirmed_user),
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    user: UserDTO = Depends(get_current_verified_user),
 ):
-    return await user_service.get_me(user, request.base_url)
+    return await user_service.get_me(user)
 
 
-@router.put("/me/", response_model=PutMeResponseSchema)
+@router.patch("/shop/", response_model=UpdateShopResponseSchema)
 @inject
-async def put_me(
-    request: Request,
-    payload: PutMeRequestSchema = Depends(PutMeRequestSchema.as_form),
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    photo: Optional[UploadFile] = File(
-        None, description="User photo. If selected, it will replace the current one."
-    ),
-    user: UserDTO = Depends(get_current_confirmed_user),
+async def update_me(
+    payload: UpdateShop,
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    user: UserDTO = Depends(get_current_verified_seller_with_iin_bin),
 ):
-    return await user_service.put_me(payload, photo, user, request.base_url)
+    return await user_service.update_shop(user, payload)
 
 
-@router.patch("/me/password/", response_model=PatchPasswordResponseSchema)
+@router.patch("/shop/photo/", response_model=UpdateShopImageResponseSchema)
 @inject
-async def patch_password(
-    payload: PatchPasswordRequestSchema,
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    user: UserDTO = Depends(get_current_confirmed_user),
+async def update_shop_photo(
+    photo: UploadFile = File(...),
+    user_service: UserService = Depends(Provide[Container.user_service]),
+    user: UserDTO = Depends(get_current_verified_seller_with_iin_bin),
 ):
-    return await user_service.patch_password(payload, user)
+    return await user_service.update_shop_photo(user, photo)

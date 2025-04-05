@@ -5,18 +5,8 @@ from sqlalchemy import engine_from_config, pool
 from accounts.models import *
 from alembic import context
 from auth.models import *
-from categories.models import *
-from chats.models import *
 from core.database import BaseModel
 from core.environment import env
-from items.models import *
-from localization.models import *
-from locations.models import *
-from notifications.models import *
-from promotions.models import *
-from ratings.models import *
-from recommendations.models import *
-from stats.models import *
 from users.models import *
 
 config = context.config

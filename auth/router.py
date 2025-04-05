@@ -63,8 +63,6 @@ async def sign_up(
     schema: SignUpSchema,
     auth_facade: AuthFacade = Depends(Provide[Container.auth_facade]),
 ):
-    if "." in schema.name:
-        raise HTTPException(status_code=400, detail="error.user.name_has_dots")
     return await auth_facade.sign_up(schema)
 
 

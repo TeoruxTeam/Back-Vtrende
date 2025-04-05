@@ -17,3 +17,5 @@ class RefreshToken(BaseModel):
     )
 
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")
+
+from users.models import User

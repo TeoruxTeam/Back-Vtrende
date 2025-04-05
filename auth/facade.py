@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import jwt
 import httpx
 from fastapi import HTTPException
-
+from core.logger import logger
 from core.environment import env
 from core.exceptions import AuthError
 from users.schemas import UserDTO
@@ -33,28 +33,30 @@ class AuthFacade:
         existing_user = await self.user_service.get_user_by_email(schema.email)
         if existing_user:
             raise UserAlreadyExists()
-
+        
         hashed_password = await self.user_service.get_password_hash(schema.password)
         created_user: UserDTO = await self.user_service.create_user(
             schema, hashed_password
         )
         tokens: AuthTokensSchema = await self.auth_service.generate_tokens(
-            created_user, remember_me=False
+            created_user
         )
 
         return SignUpResponseSchema(data=tokens)
 
     async def sign_in(self, schema: SignInSchema) -> SignInResponseSchema:
+        logger.info(f"schema: {schema}")
         user = await self.user_service.get_user_by_email(
             schema.email, pwd_required=True
         )
+        logger.info(f"user: {user}")
         if not user or not await self.user_service.verify_password(
             schema.password, user.password
         ):
             raise InvalidCredentials()
 
         tokens: AuthTokensSchema = await self.auth_service.generate_tokens(
-            user, remember_me=schema.remember_me
+            user
         )
 
         return SignInResponseSchema(data=tokens)
@@ -85,7 +87,7 @@ class AuthFacade:
 
         await self.auth_service.delete_refresh_token(refresh_token_record.id)
         tokens: AuthTokensSchema = await self.auth_service.generate_tokens(
-            user, remember_me=False
+            user
         )
 
         return RefreshTokenResponseSchema(data=tokens)
@@ -108,7 +110,7 @@ class AuthFacade:
                 avatar=avatar,
             )
 
-        tokens = await self.auth_service.generate_tokens(user, remember_me=False)
+        tokens = await self.auth_service.generate_tokens(user)
         return SignUpResponseSchema(data=tokens)
 
     async def exchange_code_for_token(self, config: dict, code: str) -> dict:

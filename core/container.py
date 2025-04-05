@@ -11,21 +11,15 @@ from accounts.services import (
 from auth.facade import AuthFacade
 from auth.repositories import RefreshTokenRepository
 from auth.services import AuthService
-from chats.facade import ChatFacade
-from chats.repositories import (
-    ChatAggregateRepository,
-    ChatRepository,
-    MessageRepository,
-)
-from chats.services import ChatAggregateService, ChatService, MessageService
 from core.database import Database, UnitOfWork
 from core.email_sender import EmailSender
 from core.environment import env
-from core.redis_client import RedisPool
-from core.socketio_server import CustomSocketServer
 from users.repositories import UserRepository
 from users.services import UserService
-
+from favorites.repositories import FavoriteRepository
+from favorites.services import FavoriteService
+from items.repositories import ItemRepository
+from items.services import ItemService
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
@@ -34,6 +28,7 @@ class Container(containers.DeclarativeContainer):
             "auth.depends",
             "users.router",
             "accounts.router",
+            "favorites.router",
             "items.router",
         ]
     )
@@ -67,6 +62,12 @@ class Container(containers.DeclarativeContainer):
     recovery_code_repository = providers.Factory(
         RecoveryTokenRepository, session_factory=db.provided.session
     )
+    favorite_repository = providers.Factory(
+        FavoriteRepository, session_factory=db.provided.session
+    )
+    item_repository = providers.Factory(
+        ItemRepository, session_factory=db.provided.session
+    )
 
     auth_service = providers.Factory(AuthService, repo=refresh_token_repository)
     user_service = providers.Factory(UserService, repo=user_repository)
@@ -76,6 +77,17 @@ class Container(containers.DeclarativeContainer):
     recovery_token_service = providers.Factory(
         RecoveryTokenService, repo=recovery_code_repository
     )
+    favorite_service = providers.Factory(
+        FavoriteService,
+        fav_repo=favorite_repository,
+        item_repo=item_repository,
+        user_repo=user_repository
+    )
+    item_service = providers.Factory(
+        ItemService,
+        repo=item_repository
+    )
+
     auth_facade = providers.Factory(
         AuthFacade, user_service=user_service, auth_service=auth_service
     )

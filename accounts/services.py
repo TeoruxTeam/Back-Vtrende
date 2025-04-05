@@ -119,7 +119,7 @@ class VerificationFacade:
         user: UserDTO,
         email_sender: EmailSender,
     ) -> SendVerificationTokenResponseSchema:
-        if user.is_activated:
+        if user.verified:
             raise UserAlreadyActivated()
 
         await self.verification_code_service.send_verification_token(user, email_sender)
