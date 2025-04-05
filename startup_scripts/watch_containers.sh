@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FRONT_CONTAINER_NAME="front"
-NGINX_CONTAINER_NAME="nginx"
+FRONT_CONTAINER_NAME="marketplace_backend"
+NGINX_CONTAINER_NAME="marketplace_nginx"
 
 docker events --filter 'event=restart' --filter 'event=start' --filter 'event=stop' --filter 'event=die' --format '{{.Type}} {{.Action}} {{.Actor.Attributes.name}}' |
 while read event; do

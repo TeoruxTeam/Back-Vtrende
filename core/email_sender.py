@@ -1,6 +1,5 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
 
 import aiosmtplib
 from pydantic import EmailStr

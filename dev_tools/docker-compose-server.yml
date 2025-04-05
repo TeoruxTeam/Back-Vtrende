@@ -1,27 +1,27 @@
 services:
-  vivli_backend:
-    container_name: vivli_backend
+  marketplace_backend:
+    container_name: marketplace_backend
     build:
       context: ../
       dockerfile: dev_tools/Dockerfile
     restart: always
     depends_on:
-      - vivli_db
-      - vivli_redis
+      - marketplace_db
+      - marketplace_redis
     ports:
       - "8000:8000"
       - "465:465"
     volumes:
       - ../:/app
     networks:
-      - vivli_network
+      - marketplace_network
     env_file:
      - .env.dev
     environment:
       ENTRYPOINT_BACKEND: "true"
 
-  vivli_db:
-    container_name: vivli_db
+  marketplace_db:
+    container_name: marketplace_db
     image: postgres:alpine
     restart: always
     env_file:
@@ -29,61 +29,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_vivli_data:/var/lib/postgresql/data
+      - postgres_marketplace_data:/var/lib/postgresql/data
     networks:
-      - vivli_network
-
-  vivli_redis:
-    container_name: vivli_redis
-    image: "redis:alpine"
-    ports:
-      - "6379:6379"
-    env_file: 
-      - .env.dev
-    command: >
-      sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
-    restart: always
-    volumes:
-      - vivli_redis_data:/data
-    networks:
-      - vivli_network
-  
-  vivli_celery_worker:
-    restart: always
-    depends_on:
-      - vivli_db
-      - vivli_redis
-    build:
-      context: ..
-      dockerfile: dev_tools/Dockerfile
-    volumes:
-      - ../:/app
-    networks:
-      - vivli_network
-    env_file:
-     - .env.dev
-    environment:
-      ENTRYPOINT_CELERY_WORKER: "true"
-
-  vivli_celery_beat:
-    restart: always
-    depends_on:
-      - vivli_db
-      - vivli_redis
-    build:
-      context: ..
-      dockerfile: dev_tools/Dockerfile
-    volumes:
-      - ../:/app
-    networks:
-      - vivli_network
-    env_file:
-     - .env.dev
-    environment:
-      ENTRYPOINT_CELERY_BEAT: "true"
+      - marketplace_network
       
-  vivli_nginx:
-    container_name: vivli_nginx
+  marketplace_nginx:
+    container_name: marketplace_nginx
     image: "nginx:alpine"
     ports:
       - "80:80"
@@ -95,14 +46,14 @@ services:
       - ../media:/app/media
       - frontend-static:/app/frontend-public
     depends_on:
-      - vivli_backend
+      - marketplace_backend
     networks:
-      - vivli_network
+      - marketplace_network
     restart: always
     command: ["/bin/sh", "-c", "chmod -R 755 /app/frontend-public && nginx -g 'daemon off;'"]
 
-  vivli_certbot:
-    container_name: vivli_certbot
+  marketplace_certbot:
+    container_name: marketplace_certbot
     image: "certbot/certbot"
     volumes:
       - ../nginx/tls:/etc/letsencrypt
@@ -110,16 +61,16 @@ services:
     entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot || true; sleep 12h & wait $${!}; done;"
     restart: always
     depends_on:
-      - vivli_nginx
+      - marketplace_nginx
     networks:
-      - vivli_network
+      - marketplace_network
 
 volumes:
-  postgres_vivli_data:
-  vivli_redis_data:
+  postgres_marketplace_data:
+  marketplace_redis_data:
   frontend-static:
     external: true
 
 networks:
-  vivli_network:
+  marketplace_network:
     external: true

@@ -2,10 +2,8 @@ import os
 from typing import List
 
 from pydantic import Field, validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 from yookassa import Configuration
-
-from core.logger import logger
 
 
 class Settings(BaseSettings):
@@ -32,28 +30,21 @@ class Settings(BaseSettings):
     smtp_start_tls: bool
     smtp_start_ssl: bool
 
-    redis_host: str
-    redis_port: int
-    redis_db: str
-    redis_password: str
+    allowed_origins: List[str] = Field(default=[])
 
     allowed_origins: List[str] = Field(default=[])
-    cookie_samesite: str
     domain: str
 
     frontend_url: str
-    locales_dir: str
 
     firebase_credentials_path: str
-    facebook_client_id: str
-    facebook_secret: str
+    yandex_client_id: str
+    yandex_secret: str
 
     google_client_id: str
     google_secret: str
 
     oauth_redirect_uri: str
-    yookassa_secret_key: str
-    yookassa_account_id: str
 
     class Config:
         env_file = os.getenv("ENV_FILE")

@@ -1,48 +1,14 @@
-from abc import ABC, abstractmethod
-from asyncio import current_task
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import Callable, Optional
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-    async_scoped_session,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase, scoped_session
+from sqlalchemy.orm import DeclarativeBase
 
 from core.logger import logger
-
-
-class IUnitOfWork(ABC):
-    @abstractmethod
-    async def begin(self):
-        """Начало транзакции"""
-        pass
-
-    async def commit(self):
-        """Подтверждение транзакции"""
-        pass
-
-    async def rollback(self):
-        """Откат транзакции"""
-        pass
-
-    async def close(self):
-        """Закрытие сессии"""
-        pass
-
-    async def get_session(self) -> AsyncSession:
-        """Получение текущей сессии"""
-        pass
-
-
-class IUnitOfWorkFactory(ABC):
-
-    @abstractmethod
-    def create(self) -> IUnitOfWork:
-        """Создаёт новый экземпляр UnitOfWork"""
-        pass
 
 
 class BaseModel(DeclarativeBase):
@@ -72,7 +38,7 @@ class Database:
                 await session.close()
 
 
-class UnitOfWork(IUnitOfWork):
+class UnitOfWork:
     def __init__(
         self, session_factory: Callable[..., AbstractAsyncContextManager[AsyncSession]]
     ):
@@ -144,12 +110,12 @@ class UnitOfWork(IUnitOfWork):
         return self.session
 
 
-class UnitOfWorkFactory(IUnitOfWorkFactory):
+class UnitOfWorkFactory:
     def __init__(
         self, session_factory: Callable[..., AbstractAsyncContextManager[AsyncSession]]
     ):
         self.session_factory = session_factory
 
-    def create(self) -> IUnitOfWork:
+    def create(self) -> UnitOfWork:
         """Создаёт экземпляр UnitOfWork, используя session_factory"""
         return UnitOfWork(self.session_factory)
