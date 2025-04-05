@@ -7,7 +7,6 @@ services:
     restart: always
     depends_on:
       - marketplace_db
-      - marketplace_redis
     ports:
       - "8000:8000"
       - "465:465"
@@ -67,7 +66,6 @@ services:
 
 volumes:
   postgres_marketplace_data:
-  marketplace_redis_data:
   frontend-static:
     external: true
 
