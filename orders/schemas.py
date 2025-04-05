@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class OrderDTO(BaseModel):
@@ -11,3 +12,8 @@ class OrderDTO(BaseModel):
 class GetSelfOrdersResponseSchema(BaseModel):
     data: list[OrderDTO]
     count: int
+
+class CreateOrderResponseSchema(BaseModel):
+    data: OrderDTO
+
+

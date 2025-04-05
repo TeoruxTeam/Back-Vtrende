@@ -11,11 +11,17 @@ from auth.router import router as auth_router
 from core.container import Container
 from core.environment import env
 from users.router import router as user_router
+from favorites.router import router as favorite_router
+from items.router import router as item_router
+from orders.router import router as order_router
 
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(account_router)
+app.include_router(favorite_router)
+app.include_router(item_router)
+app.include_router(order_router)
 
 app.add_middleware(
     CORSMiddleware,

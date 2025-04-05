@@ -112,3 +112,4 @@ async def get_item(
     item_service: ItemService = Depends(Provide[Container.item_service]),
 ) -> GetItemResponseSchema:
     return await item_service.get_item(item_id)
+
