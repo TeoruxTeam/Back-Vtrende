@@ -15,3 +15,9 @@ auth/__pycache__/__init__.cpython-312.pyc
 auth/__pycache__/models.cpython-312.pyc
 **/__pycache__/
 
+core/__pycache__/__init__.cpython-312.pyc
+core/__pycache__/database.cpython-312.pyc
+core/__pycache__/email_sender.cpython-312.pyc
+core/__pycache__/environment.cpython-312.pyc
+core/__pycache__/logger.cpython-312.pyc
+core/__pycache__/schemas.cpython-312.pyc
