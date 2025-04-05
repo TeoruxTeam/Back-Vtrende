@@ -1,0 +1,104 @@
+name: CI/CD Pipeline
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Copy repository to temporary directory on server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        source: "."
+        target: "/tmp/back/"
+
+    - name: Sync repository to target directory
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+            mkdir -p ~/back
+            rsync -av --delete \
+            --include='media/' \
+            --include='media/opengraph/' \
+            --include='media/opengraph/*' \
+            --exclude='dev_tools/.env.dev' \
+            --exclude='media/*' \
+            --exclude='nginx/*' \
+            /tmp/back/ ~/back/
+
+            rsync -av \
+            --include='nginx/' \
+            --include='nginx/**' \
+            /tmp/back/ ~/back/
+
+            if [ -f /tmp/back/dev_tools/.env.dev ]; then
+              cp /tmp/back/dev_tools/.env.dev ~/back/dev_tools/
+            fi
+
+            rm -rf /tmp/back/
+    
+    - name: Install Docker and Docker Compose V2 on the server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          if ! command -v docker &> /dev/null; then
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sudo sh get-docker.sh
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker $USER
+            echo 'Please logout and login again to apply docker group changes.'
+          fi
+          
+          DOCKER_COMPOSE_VERSION=$(docker compose version --short 2>/dev/null || echo "not_installed")
+          if [ "$DOCKER_COMPOSE_VERSION" = "not_installed" ]; then
+            echo 'Docker Compose V2 not installed, installing via Docker CLI plugins...'
+            sudo apt-get update
+            sudo apt-get install -y docker-compose-plugin
+          fi
+
+    - name: Create docker network
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          if [ ! "$(docker network ls | grep events_network)" ]; then
+            docker network create marketplace_network
+            echo "Network 'marketplace_network' created."
+          else
+            echo "Network 'marketplace_network' already exists."
+          fi
+
+    - name: Deploy using Docker Compose 
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd ~/back/dev_tools/
+          docker compose down
+          docker system prune
+          docker compose -f docker-compose-server.yml up --build -d
